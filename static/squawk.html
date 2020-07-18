@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Squawk</title>
+</head>
+<style>
+  div {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    padding: 20px;
+  }
+  button {
+    font-family: Arial, Helvetica, sans-serif;
+    padding: 10px;
+    border-radius: 10px;
+    display: inline;
+  }
+  input {
+    line-height: 2em;
+    border-radius: 10px;
+  }
+  #broadcast {
+    width: 40%;
+  }
+  ul {
+    padding: 10px;
+  }
+  ul li {
+    padding: 5px;
+    list-style-type: none;
+    font-weight: normal;
+  }
+</style>
+<body>
+  <div>Status: <span id="status"></span>&nbsp;&nbsp;<button id="reconnect" type="button" onclick="reconnect();">Reconnect</button></div>
+  <div>
+    <input type="text" name="broadcast" id="broadcast" placeholder="Enter a message to send" />
+    <button type="button" onclick="send(socket);">Broadcast</button>
+  </div>
+  <div>Messages</div>
+  <div><ul id="message-list"></ul></div>
+  <script>
+    function clear() {
+      document.getElementById('message-list').innerHTML = '';
+    }
+
+    function newSocket() {
+      clear();
+      const ws = new WebSocket('ws://localhost:3000/squawker');
+      ws.onopen = () => {
+        document.getElementById('status').innerText = 'Connected';
+        document.getElementById('reconnect').setAttribute('disabled', 'true');
+      };
+      ws.onmessage = (msg) => {
+        document.getElementById('message-list').innerHTML += `<li>${msg.data}</li>`
+      }
+      ws.onclose = () => {
+        document.getElementById('status').innerText = 'Closed';
+        document.getElementById('reconnect').removeAttribute('disabled');
+      };
+      return ws;
+    }
+
+    function reconnect() {
+      socket = newSocket();
+    }
+
+    function send(s) {
+      const el = document.getElementById('broadcast');
+      s.send(el.value)
+      el.value = '';
+    }
+
+    let socket = newSocket();
+  </script>
+</body>
+</html>
